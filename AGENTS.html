@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A practical operating guide for coding agents, adapted from the Multica AI Karpathy-inspired CLAUDE.md.">
+  <title>AGENTS | A practical coding-agent guide</title>
+  <style>
+    :root {
+      --ink: #17231d;
+      --muted: #65736b;
+      --paper: #f5f2e9;
+      --panel: #fffdf7;
+      --line: #d9ded6;
+      --moss: #346044;
+      --moss-dark: #1e3c2a;
+      --sun: #e8b649;
+      --coral: #d87054;
+      --shadow: 0 22px 60px rgba(34, 56, 42, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 4%, rgba(232, 182, 73, 0.28), transparent 26rem),
+        radial-gradient(circle at 96% 24%, rgba(216, 112, 84, 0.12), transparent 28rem),
+        var(--paper);
+      font-family: Georgia, "Times New Roman", serif;
+      line-height: 1.6;
+    }
+
+    a { color: var(--moss); }
+
+    .shell {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+
+    .masthead {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: clamp(32px, 8vw, 110px);
+      align-items: end;
+      min-height: 600px;
+      padding: 72px 0 82px;
+    }
+
+    .kicker,
+    .section-label,
+    .source-note,
+    .checklist li::before {
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0 0 26px;
+      color: var(--moss);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .kicker::before {
+      width: 34px;
+      height: 3px;
+      content: "";
+      background: var(--coral);
+    }
+
+    h1,
+    h2,
+    p { margin-top: 0; }
+
+    h1 {
+      max-width: 720px;
+      margin-bottom: 26px;
+      font-size: clamp(3.8rem, 9vw, 7.4rem);
+      font-weight: 400;
+      letter-spacing: -0.075em;
+      line-height: 0.88;
+    }
+
+    h1 span { color: var(--coral); }
+
+    .lede {
+      max-width: 590px;
+      margin-bottom: 0;
+      color: var(--muted);
+      font-size: clamp(1.15rem, 2vw, 1.45rem);
+      line-height: 1.45;
+    }
+
+    .principle {
+      position: relative;
+      padding: 34px 30px 30px;
+      background: var(--moss-dark);
+      color: #f9f5e9;
+      box-shadow: var(--shadow);
+      transform: rotate(2deg);
+    }
+
+    .principle::before {
+      position: absolute;
+      top: -13px;
+      left: 28px;
+      width: 76px;
+      height: 25px;
+      content: "";
+      background: rgba(232, 182, 73, 0.78);
+      transform: rotate(-4deg);
+    }
+
+    .principle strong {
+      display: block;
+      margin-bottom: 18px;
+      color: var(--sun);
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .principle p {
+      margin-bottom: 0;
+      font-size: clamp(1.7rem, 3vw, 2.4rem);
+      line-height: 1.1;
+    }
+
+    .source-note {
+      margin: 0 0 66px;
+      padding: 16px 0;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.7rem;
+    }
+
+    .source-note a { font-weight: 700; }
+
+    .section-label {
+      margin-bottom: 16px;
+      color: var(--coral);
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .intro {
+      display: grid;
+      grid-template-columns: 0.7fr 1.3fr;
+      gap: 48px;
+      padding-bottom: 76px;
+    }
+
+    .intro h2 {
+      max-width: 340px;
+      margin-bottom: 0;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      font-weight: 400;
+      letter-spacing: -0.045em;
+      line-height: 1;
+    }
+
+    .intro-copy {
+      max-width: 650px;
+      color: var(--muted);
+      font-size: 1.12rem;
+    }
+
+    .intro-copy p:last-child { margin-bottom: 0; }
+
+    .principles {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      padding-bottom: 90px;
+    }
+
+    .card {
+      min-height: 315px;
+      padding: 28px 30px 30px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: 0 8px 24px rgba(34, 56, 42, 0.04);
+    }
+
+    .card:nth-child(2) { border-top: 4px solid var(--sun); }
+    .card:nth-child(3) { border-top: 4px solid var(--coral); }
+    .card:nth-child(4) { border-top: 4px solid var(--moss); }
+
+    .card-number {
+      margin-bottom: 24px;
+      color: var(--muted);
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+    }
+
+    .card h2 {
+      margin-bottom: 14px;
+      font-size: clamp(1.75rem, 3vw, 2.5rem);
+      font-weight: 400;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .card p {
+      margin-bottom: 18px;
+      color: var(--muted);
+    }
+
+    .card ul,
+    .checklist {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .card li {
+      position: relative;
+      margin: 8px 0;
+      padding-left: 18px;
+      font-size: 0.97rem;
+    }
+
+    .card li::before {
+      position: absolute;
+      left: 0;
+      color: var(--coral);
+      content: "•";
+    }
+
+    .workflow {
+      display: grid;
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 58px;
+      align-items: start;
+      padding: 66px 0 74px;
+      border-top: 1px solid var(--line);
+    }
+
+    .docs-policy {
+      display: grid;
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 58px;
+      align-items: start;
+      padding: 0 0 74px;
+    }
+
+    .docs-policy h2 {
+      max-width: 360px;
+      margin-bottom: 0;
+      font-size: clamp(2.2rem, 4vw, 3.8rem);
+      font-weight: 400;
+      letter-spacing: -0.05em;
+      line-height: 0.95;
+    }
+
+    .docs-policy-copy {
+      padding: 24px 26px;
+      border-left: 4px solid var(--moss);
+      background: var(--panel);
+      color: var(--muted);
+      font-size: 1.08rem;
+    }
+
+    .docs-policy-copy p:last-child { margin-bottom: 0; }
+
+    code {
+      padding: 0.12em 0.35em;
+      background: #e9eee7;
+      color: var(--moss-dark);
+      font-family: "Courier New", monospace;
+      font-size: 0.9em;
+    }
+
+    .workflow h2 {
+      max-width: 330px;
+      margin-bottom: 0;
+      font-size: clamp(2.2rem, 4vw, 3.8rem);
+      font-weight: 400;
+      letter-spacing: -0.05em;
+      line-height: 0.95;
+    }
+
+    .checklist { counter-reset: checks; }
+
+    .checklist li {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 16px;
+      align-items: start;
+      padding: 18px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 1.12rem;
+    }
+
+    .checklist li::before {
+      counter-increment: checks;
+      content: counter(checks, decimal-leading-zero);
+      color: var(--coral);
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .closing {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      padding: 48px;
+      background: var(--sun);
+    }
+
+    .closing h2 {
+      margin-bottom: 0;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      font-weight: 400;
+      letter-spacing: -0.05em;
+      line-height: 0.98;
+    }
+
+    .closing p {
+      align-self: end;
+      margin-bottom: 0;
+      color: #4b3a16;
+      font-size: 1.05rem;
+    }
+
+    footer {
+      padding: 48px 0 70px;
+      color: var(--muted);
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      font-size: 0.78rem;
+    }
+
+    @media (max-width: 760px) {
+      .shell { width: min(100% - 28px, 620px); }
+      .masthead,
+      .intro,
+      .workflow,
+      .closing { grid-template-columns: 1fr; }
+      .masthead { min-height: 0; padding: 54px 0 52px; }
+      .principle { margin: 18px 12px 0 0; }
+      .principles { grid-template-columns: 1fr; padding-bottom: 62px; }
+      .card { min-height: 0; }
+      .docs-policy,
+      .workflow { gap: 24px; }
+      .docs-policy { padding-bottom: 58px; }
+      .workflow { padding: 48px 0 58px; }
+      .closing { padding: 32px 26px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .principle { transform: none; }
+    }
+</style>
+  <link rel="stylesheet" href="docs/site.css">
+</head>
+<body>
+  <main class="shell">
+    <nav class="site-nav" aria-label="Primary navigation">
+      <a class="site-nav-brand" href="AGENTS.html">AGENTS</a>
+      <div class="site-nav-links">
+        <a href="AGENTS.html" aria-current="page">Guide</a>
+        <a href="docs/index.html">Docs</a>
+        <a href="docs/CHANGELOG.html">Changelog</a>
+      </div>
+    </nav>
+
+    <header class="masthead">
+      <div>
+        <p class="kicker">Agent operating guide</p>
+        <h1>Think clearly.<br>Change <span>narrowly.</span></h1>
+        <p class="lede">A practical agreement for coding agents: understand the real problem, make the smallest useful change, and leave behind evidence that the work is sound.</p>
+      </div>
+      <aside class="principle" aria-label="Guiding principle">
+        <strong>North star</strong>
+        <p>Do not make the codebase carry assumptions you could have surfaced first.</p>
+      </aside>
+    </header>
+
+    <p class="source-note">Adapted and updated from <a href="https://github.com/multica-ai/andrej-karpathy-skills/blob/main/CLAUDE.md" target="_blank" rel="noopener noreferrer">Multica AI’s Karpathy-inspired CLAUDE.md</a>.</p>
+
+    <section class="intro" aria-labelledby="working-agreement">
+      <div>
+        <p class="section-label">Working agreement</p>
+        <h2>Good agents reduce uncertainty before they reduce code.</h2>
+      </div>
+      <div class="intro-copy">
+        <p>These rules are a default, not a ritual. Use judgment for small tasks, but do not trade clarity for speed when the stakes are high.</p>
+        <p>When the request, the repository, or the expected result is unclear, make the uncertainty visible. Ask the smallest useful question or state the assumption you are using. Never quietly invent requirements.</p>
+      </div>
+    </section>
+
+    <section class="principles" aria-label="Four operating principles">
+      <article class="card">
+        <div class="card-number">01 / Before the first edit</div>
+        <h2>Think before coding</h2>
+        <p>Start with the problem that is actually being solved, not the first implementation that comes to mind.</p>
+        <ul>
+          <li>State assumptions and identify the decision that depends on each one.</li>
+          <li>Check how the current code is used before changing how it works.</li>
+          <li>Surface competing interpretations instead of choosing silently.</li>
+          <li>Push back kindly when the requested path is risky or needlessly complex.</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <div class="card-number">02 / Scope is a feature</div>
+        <h2>Choose the smallest useful solution</h2>
+        <p>Every extra feature, abstraction, and edge case adds a cost. Spend that cost only when the problem requires it.</p>
+        <ul>
+          <li>Build what was requested, not a speculative platform around it.</li>
+          <li>Prefer a direct solution over an abstraction used only once.</li>
+          <li>Match error handling to realistic failure modes.</li>
+          <li>If the change is much larger than the problem, stop and simplify.</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <div class="card-number">03 / Preserve the neighborhood</div>
+        <h2>Make surgical changes</h2>
+        <p>Touch only what the request demands. The surrounding code is context to respect, not an invitation to redesign.</p>
+        <ul>
+          <li>Match the project’s existing style and conventions.</li>
+          <li>Avoid drive-by refactors, formatting changes, and unrelated cleanup.</li>
+          <li>Remove only the imports, variables, or functions your change orphaned.</li>
+          <li>Every changed line should have a clear connection to the goal.</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <div class="card-number">04 / Finish with evidence</div>
+        <h2>Make success testable</h2>
+        <p>Turn “make it work” into an observable result, then use the shortest reliable path to prove it.</p>
+        <ul>
+          <li>Define success before implementation begins.</li>
+          <li>For bugs, reproduce the failure before fixing it.</li>
+          <li>For validation, cover the invalid input as well as the happy path.</li>
+          <li>For refactors, compare behavior before and after.</li>
+        </ul>
+      </article>
+    </section>
+
+    <section class="docs-policy" aria-labelledby="docs-heading">
+      <div>
+        <p class="section-label">Documentation boundary</p>
+        <h2 id="docs-heading">Keep project documentation in <code>docs/*.html</code>.</h2>
+      </div>
+      <div class="docs-policy-copy">
+        <p>When a task creates or updates documentation, place the finished page inside the <code>docs/</code> directory and use the <code>.html</code> format.</p>
+        <p>Keep the repository root focused on project entrypoints and agent instructions. Link to documentation from the relevant entrypoint instead of adding new root-level documents.</p>
+        <p>Record every project change in <code>docs/CHANGELOG.html</code>. Write each update like a blog post, put the newest post first, and include a timestamp on every entry.</p>
+      </div>
+    </section>
+
+    <section class="workflow" aria-labelledby="workflow-heading">
+      <div>
+        <p class="section-label">A reliable loop</p>
+        <h2>Make the plan small enough to verify.</h2>
+      </div>
+      <ol class="checklist">
+        <li>Define the request in one sentence and name what “done” will look like.</li>
+        <li>Inspect the relevant files, usage, and project conventions before editing.</li>
+        <li>Choose the minimum change that can satisfy the success criteria.</li>
+        <li>Implement without expanding the scope unless new evidence requires it.</li>
+        <li>Verify the behavior that matters, then report assumptions and remaining gaps.</li>
+      </ol>
+    </section>
+
+    <section class="closing" aria-labelledby="closing-heading">
+      <h2>Clarity is not overhead. It is how we avoid rework.</h2>
+      <p>When in doubt: pause, name the uncertainty, make the smallest reversible move, and leave the code easier to trust than you found it.</p>
+    </section>
+
+    <footer>
+      AGENTS.html · A project-friendly adaptation of the Multica AI source guidance
+    </footer>
+  </main>
+</body>
+</html>
